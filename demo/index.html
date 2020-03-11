@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Catia</title>
+	<link rel="stylesheet" href="./app.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<section>
+			<div class="terminal">
+				<div class="terminal-header">Catia. Capture user actions in the browser</div>
+				<div class="terminal-body"></div>
+			</div>
+		</section>
+		<section>
+			<header>
+				<h1 class="brand">
+					Catia
+				</h1>
+				<nav>
+					<ul>
+						<li>
+							<a href="" data-link="Home">Home</a>
+						</li>
+						<li>
+							<a href="#setup" data-link="Library setup">Setup</a>
+						</li>
+						<li>
+							<a href="#docs" data-link="Documentation">Docs</a>
+						</li>
+						<li>
+							<a href="#support" data-link="Support the project">Support</a>
+						</li>
+					</ul>
+				</nav>
+			</header>
+			<main>
+				<input placeholder="Write here" id="input1" class="pretty-input super-input" title="The first input"
+					aria-label="The first input">
+				<input placeholder="Write here too" id="input2" class="pretty-input" title="The second input"
+					aria-label="The second input">
+				<input placeholder="Cant write here" id="input3" disabled class="pretty-input" title="The third input"
+					aria-label="The third input">
+				<div contenteditable="true" class="pretty-input">Write here also</div>
+				<select id="fruit-basket">
+					<option value="banana">Banana</option>
+					<option value="apple">Apple</option>
+					<option value="oranges">Oranges</option>
+				</select>
+				<button>Click here!</button>
+				<input id="color-select" type="color" class="pretty-color" />
+			</main>
+		</section>
+	</div>
+
+	<script src="../dist/catia.js"></script>
+	<script>
+		var c = catia({
+			captureFocusOnClick: false,
+			captureSpacePress: true,
+			skipNodes: ['html', 'body', 'main', '.terminal'],
+			mashTyped: true
+		}, (data) => {
+			const terminalBody = document.querySelector('.terminal-body');
+			const terminalLine = document.createElement('div');
+			terminalLine.className = 'terminal-line';
+			terminalLine.innerHTML = data.lastAction;
+			terminalBody.append(terminalLine);
+		});
+
+		c.capture();
+	</script>
+</body>
+
+</html>

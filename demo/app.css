@@ -1,0 +1,122 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background-color: antiquewhite;
+	font-family: sans-serif;
+}
+
+.wrapper {
+	max-width: 2000px;
+	margin: auto 0%;
+	display: grid;
+	grid-template-columns: .5fr 1fr;
+}
+
+nav, h1 {
+	display: inline-block;
+}
+
+ul li {
+	list-style: none;
+	display: inline-block;
+	margin: 0 1em;
+}
+
+a {
+	color: #2b2b2b;
+	text-decoration: none;
+}
+
+a:hover,
+a:focus {
+	color: #000000;
+}
+
+.brand {
+	margin: 10px;
+	color: palevioletred;
+	font-size: 3em;
+}
+
+.pretty-input {
+    border: 1px solid black;
+    width: 250px;
+    height: 50px;
+    padding: 5px;
+    margin: 10px;
+    background-color: aliceblue;
+	color: #121212;
+	border-radius: 4px;
+	font-size: 1.5em;
+}
+
+.pretty-input:focus {
+	border: 2px solid blue;
+}
+
+.pretty-color {
+	border: 5px solid orchid;
+	border-radius: 10px;
+	width: 50px;
+	height: 50px;
+}
+
+select,
+button {
+    width: 200px;
+    height: 70px;
+    background-color: orange;
+    color: #121212;
+    font-size: 1.5em;
+    padding: 10px;
+	margin: 10px;
+	border-radius: 4px;
+	border: 1px solid orangered;
+
+}
+
+button:hover,
+button:focus {
+    background-color: #161616;
+	color: aliceblue;
+	border: 2px solid blue;
+}
+
+/* Terminal */
+
+.terminal {
+	height: 100vh;
+	background-color: rgb(46, 46, 46);
+	color: aliceblue;
+	font-family: monospace;
+	font-size: 1.2em;
+	overflow-y: auto;
+}
+
+.terminal-header {
+	background-color: #262424;
+	padding: 5px;
+	font-size: 14px;
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	    -ms-user-select: none;
+	        user-select: none;
+}
+
+.terminal-body {
+	padding: 2px;
+}
+
+.terminal-line {
+	line-height: 27px;
+}
+
+.terminal-line::before {
+	content: ' % ';
+	font-weight: bold;
+	font-size: 17px;
+	color: whitesmoke;
+}
