@@ -21,24 +21,87 @@ const events = {
 const actions = {
 	type: 'type',
 	wait: 'wait',
-	press: 'press'
+	press: 'press',
+	scrollLeft: 'scroll left',
+	scrollRight: 'scroll right',
+	scrollDown: 'scroll down',
+	scrollUp: 'scroll up'
 };
 
 const digits = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()_-=+\\|}{][":\';<,.>/?*-+^~´ªºÇç«»ã';
 
 const capturedActions = [];
+let lastCapturedAction = '';
 const TOKEN_SELECTOR = '$';
 const TOKEN_SPACE = ' ';
+let lastKnownScrollPositionY = 0;
+let lastKnownScrollPositionX = 0;
+let ticking = false;
+
+// Helpers
+
+function isObject(obj) {
+	if (obj) {
+		let type = Object.prototype.toString.call(obj);
+		type = type.replace(/[\s[\]]/g, '').toLowerCase()
+			.substring(0, 6);
+		return type === 'object';
+	}
+
+	return false;
+}
+
+function isEditable(node) {
+	const contentEditable = node.contentEditable === 'true';
+	const name = getNodeName(node);
+	return name === 'input' || contentEditable;
+}
 
 // Interface
+
+function captureScrollPosition(opts, scroolData) {
+	const {
+		currentPositionX,
+		currentPositionY,
+		maxY,
+		maxX
+	} = scroolData;
+
+	const halfPointY = parseInt(maxY / 4, 10);
+	const halfPointX = parseInt(maxX / 4, 10);
+
+	if (currentPositionY < maxY && currentPositionY >= halfPointY) {
+		logAction({ opts, captured: action('scrollDown') });
+	}
+
+	if (currentPositionY > 0 && currentPositionY < halfPointY) {
+		logAction({ opts, captured: action('scrollUp') });
+	}
+
+	if (currentPositionX < maxX && currentPositionX >= halfPointX) {
+		logAction({ opts, captured: action('scrollRight') });
+	}
+
+	if (currentPositionX > 0 && currentPositionX < halfPointX) {
+		logAction({ opts, captured: action('scrollLeft') });
+	}
+}
 
 function action(cmd) {
 	const TOKEN_ACTION = events[cmd] || actions[cmd];
 	const isEvent = Boolean(events[cmd]);
 
 	return (
-		isEvent && TOKEN_ACTION + TOKEN_SPACE + TOKEN_SELECTOR + TOKEN_SPACE
-		|| !isEvent && TOKEN_ACTION + TOKEN_SPACE
+		isEvent && {
+			token: cmd,
+			cmd: TOKEN_ACTION,
+			action: TOKEN_ACTION + TOKEN_SPACE + TOKEN_SELECTOR + TOKEN_SPACE
+		}
+		|| !isEvent && {
+			token: cmd,
+			cmd: TOKEN_ACTION,
+			action: TOKEN_ACTION + TOKEN_SPACE
+		}
 	);
 }
 
@@ -146,23 +209,6 @@ function getClosestSelector(target, options) {
 		: null;
 }
 
-function isObject(obj) {
-	if (obj) {
-		let type = Object.prototype.toString.call(obj);
-		type = type.replace(/[\s[\]]/g, '').toLowerCase()
-			.substring(0, 6);
-		return type === 'object';
-	}
-
-	return false;
-}
-
-function isEditable(node) {
-	const contentEditable = node.contentEditable === 'true';
-	const name = getNodeName(node);
-	return name === 'input' || contentEditable;
-}
-
 function typeEvent(ev, options) {
 	const target = ev.target;
 	const { captureSpacePress, typeDigits } = options;
@@ -173,14 +219,15 @@ function typeEvent(ev, options) {
 
 	return (
 		isValidEditable && typeDigits && digits.includes(value)
-			? action('type') + value
-			: action('press') + value
+			? { action: action('type'), value }
+			: { action: action('press'), value }
 	);
 }
 
-function logAction(...data) {
-	const capturedAction = data.join('');
-	capturedActions.push(capturedAction);
+function logAction(data, ...r) {
+	const { opts, captured: o } = data;
+	const rest = r ? r.join('') : '';
+	let capturedAction = o.action + rest;
 
 	const event = new CustomEvent('catiacapture', {
 		detail: {
@@ -188,7 +235,18 @@ function logAction(...data) {
 			lastAction: capturedAction
 		}
 	});
-	window.dispatchEvent(event);
+
+	const ignoreForTheseTokens = ['type'];
+	const canDispatch = lastCapturedAction !== capturedAction
+	|| ignoreForTheseTokens.includes(o.token)
+	|| opts.registerMultipleTimes;
+
+	if (canDispatch) {
+		capturedActions.push(capturedAction);
+		window.dispatchEvent(event);
+	}
+
+	lastCapturedAction = capturedAction;
 }
 
 function capture(opts = {}) {
@@ -202,7 +260,7 @@ function capture(opts = {}) {
 		// wait every second, considering dead time
 			opts.showWait && setTimeout(() => {
 				setInterval(() => {
-					logAction(action('wait'), waitCount);
+					logAction({ opts, captured: action('wait') }, waitCount);
 					waitCount++;
 				}, 1000);
 			}, opts.waitTimeout || 5000);
@@ -216,8 +274,8 @@ function capture(opts = {}) {
 			const elem = closestSelector && document.querySelector(closestSelector);
 
 			closestSelector
-		&& opts.captureHover
-		&& logAction(action('hover'), closestSelector);
+			&& opts.captureHover
+			&& logAction({ opts, captured: action('hover') }, closestSelector);
 
 			// add focus event on the element just hovered, for when is focused
 			if (elem) {
@@ -226,16 +284,18 @@ function capture(opts = {}) {
 					const isFocusable = Number(target.tabIndex) >= 0;
 
 					if (isFocusable && opts.captureFocusOnClick) {
-						logAction(action('focus'), closestSelector);
+						logAction({ opts, captured: action('focus') }, closestSelector);
 					}
 				}, false);
 
 				elem.addEventListener('input', e => {
 					if (e.target.type === 'color') {
 						const typed = typeEvent(e, {
-							captureSpacePress: opts.captureSpacePress
+							captureSpacePress: opts.captureSpacePress,
+							typeDigits: true
 						});
-						typed.length && logAction(typed);
+
+						typed.value.length && logAction({ opts, captured: typed.action }, typed.value);
 					}
 				}, false);
 			}
@@ -245,21 +305,21 @@ function capture(opts = {}) {
 			waitCount = 0;
 			const target = ev.target;
 			getClosestSelector(target, { skipNodes })
-			&& logAction(action('click'), getClosestSelector(ev.target, { skipNodes }));
+			&& logAction({ opts, captured: action('click') }, getClosestSelector(ev.target, { skipNodes }));
 		}, false);
 
 		window.addEventListener('dblclick', ev => {
 			waitCount = 0;
 			getClosestSelector(ev.target, { skipNodes })
-			&& logAction(action('doubleClick'), getClosestSelector(ev.target, { skipNodes }));
+			&& logAction({ opts, captured: action('doubleClick') }, getClosestSelector(ev.target, { skipNodes }));
 		}, false);
 
-		window.addEventListener('keyup', ev => {
+		window.addEventListener('keydown', ev => {
 			waitCount = 0;
 
 			if (ev.keyCode === 9) {
 				getClosestSelector(ev.target, { skipNodes })
-				&& logAction(action('focus'), getClosestSelector(ev.target, { skipNodes }));
+				&& logAction({ opts, captured: action('focus') }, getClosestSelector(ev.target, { skipNodes }));
 			}
 
 			let typeEvOpts = {
@@ -268,8 +328,28 @@ function capture(opts = {}) {
 			};
 
 			const typed = typeEvent(ev, typeEvOpts);
-			typed.length && logAction(typed);
+			typed.value.length && logAction({ opts, captured: typed.action }, typed.value);
 		}, false);
+
+		opts.captureScroll && window.addEventListener('scroll', () => {
+			lastKnownScrollPositionY = window.scrollY;
+			lastKnownScrollPositionX = window.scrollX;
+			const maxY = window.scrollMaxY;
+			const maxX = window.scrollMaxX;
+
+			if (!ticking) {
+				window.requestAnimationFrame(function() {
+					captureScrollPosition(opts, {
+						currentPositionX: lastKnownScrollPositionX,
+						currentPositionY: lastKnownScrollPositionY,
+						maxY,
+						maxX
+					});
+					ticking = false;
+				});
+				ticking = true;
+			}
+		});
 	};
 }
 
