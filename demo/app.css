@@ -8,11 +8,18 @@ body {
 	font-family: sans-serif;
 }
 
+main {
+	display: grid;
+	grid-template-columns: repeat(3, 300px);
+	grid-template-rows: repeat(4, auto);
+	padding-top: 20px;
+}
+
 .wrapper {
 	max-width: 2000px;
 	margin: auto 0%;
 	display: grid;
-	grid-template-columns: .5fr 1fr;
+	grid-template-columns: 400px 1fr;
 }
 
 nav, h1 {
@@ -33,24 +40,56 @@ a {
 a:hover,
 a:focus {
 	color: #000000;
+	border-bottom: 2px solid palevioletred;
 }
 
 .brand {
-	margin: 10px;
+	margin: 10px 20px;
 	color: palevioletred;
 	font-size: 3em;
 }
 
+.menu {
+	position: relative;
+	top: -8px;
+}
+
+/* Show box */
+
+.show-box {
+	position: relative;
+	width: -webkit-fit-content;
+	width: -moz-fit-content;
+	width: fit-content;
+	height: -webkit-fit-content;
+	height: -moz-fit-content;
+	height: fit-content;
+	margin: 20px;
+	border-radius: 2px;
+}
+
+.show-box .label {
+	position: absolute;
+	font-size: 12px;
+	top: -12px;
+	left: -1px;
+	color: aliceblue;
+	background-color: black;
+	border-radius: 2px;
+	padding: 4px;
+}
+
 .pretty-input {
+	position: relative;
     border: 1px solid black;
     width: 250px;
     height: 50px;
     padding: 5px;
-    margin: 10px;
+    margin: 10px 0px 0px;
     background-color: aliceblue;
 	color: #121212;
 	border-radius: 4px;
-	font-size: 1.5em;
+	font-size: 1.1em;
 }
 
 .pretty-input:focus {
@@ -58,31 +97,32 @@ a:focus {
 }
 
 .pretty-color {
-	border: 5px solid orchid;
-	border-radius: 10px;
-	width: 50px;
+	border: 1px solid orchid;
+	width: 100px;
 	height: 50px;
 }
 
-select,
-button {
-    width: 200px;
-    height: 70px;
+button,
+select {
     background-color: orange;
     color: #121212;
     font-size: 1.5em;
     padding: 10px;
-	margin: 10px;
+	margin: 0px;
 	border-radius: 4px;
 	border: 1px solid orangered;
+}
 
+button {
+    width: 200px;
+    height: 70px;
 }
 
 button:hover,
 button:focus {
-    background-color: #161616;
+    background-color: #d9611b;
 	color: aliceblue;
-	border: 2px solid blue;
+	border-width: 2px;
 }
 
 /* Terminal */
