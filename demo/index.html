@@ -12,7 +12,10 @@
 	<div class="wrapper">
 		<section>
 			<div class="terminal">
-				<div class="terminal-header">Catia. Capture monitor.</div>
+				<div class="terminal-header">
+					<span>Catia. Capture monitor.</span>
+					<button id="clear-terminal" class="terminal-btn">clear</button>
+				</div>
 				<div class="terminal-body"></div>
 			</div>
 		</section>
@@ -68,7 +71,7 @@
 				</div>
 				<div class="show-box">
 					<span class="label">Button</span>
-					<button>Click here!</button>
+					<button class="button">Click here!</button>
 				</div>
 				<div class="show-box">
 					<span class="label">Color picker</span>
@@ -80,11 +83,18 @@
 
 	<script src="../dist/catia.js"></script>
 	<script>
+		const terminal = document.querySelector('.terminal');
+		const terminalBody = document.querySelector('.terminal-body');
+		const clearBtn = document.getElementById('clear-terminal');
+		clearBtn.onclick = function() {
+			terminalBody.innerHTML = '';
+		};
+
 		var c = catia({
 			captureFocusOnClick: false,
 			captureSpacePress: true,
 			registerMultipleTimes: false,
-			captureScroll: true,
+			captureScroll: false,
 			skipNodes: [
 				'html',
 				'body',
@@ -95,9 +105,7 @@
 			],
 			mashTyped: true
 		}, (data) => {
-			const terminal = document.querySelector('.terminal');
-			terminal.scrollHeight = window.outerHeight;
-			const terminalBody = document.querySelector('.terminal-body');
+			// add terminal lines
 			const terminalLine = document.createElement('div');
 			terminalLine.className = 'terminal-line';
 			terminalLine.innerHTML = data.lastAction;

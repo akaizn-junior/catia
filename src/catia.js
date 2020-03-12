@@ -25,7 +25,8 @@ const actions = {
 	scrollLeft: 'scroll left',
 	scrollRight: 'scroll right',
 	scrollDown: 'scroll down',
-	scrollUp: 'scroll up'
+	scrollUp: 'scroll up',
+	input: 'input'
 };
 
 const digits = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()_-=+\\|}{][":\';<,.>/?*-+^~´ªºÇç«»ã';
@@ -236,6 +237,8 @@ function logAction(data, ...r) {
 		}
 	});
 
+	console.log(o.token);
+
 	const ignoreForTheseTokens = ['type'];
 	const canDispatch = lastCapturedAction !== capturedAction
 	|| ignoreForTheseTokens.includes(o.token)
@@ -290,12 +293,7 @@ function capture(opts = {}) {
 
 				elem.addEventListener('input', e => {
 					if (e.target.type === 'color') {
-						const typed = typeEvent(e, {
-							captureSpacePress: opts.captureSpacePress,
-							typeDigits: true
-						});
-
-						typed.value.length && logAction({ opts, captured: typed.action }, typed.value);
+						logAction({ opts, captured: action('input') }, e.target.value);
 					}
 				}, false);
 			}

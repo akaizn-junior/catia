@@ -102,7 +102,7 @@ a:focus {
 	height: 50px;
 }
 
-button,
+.button,
 select {
     background-color: orange;
     color: #121212;
@@ -113,13 +113,13 @@ select {
 	border: 1px solid orangered;
 }
 
-button {
+.button {
     width: 200px;
     height: 70px;
 }
 
-button:hover,
-button:focus {
+.button:hover,
+.button:focus {
     background-color: #d9611b;
 	color: aliceblue;
 	border-width: 2px;
@@ -159,4 +159,13 @@ button:focus {
 	font-weight: bold;
 	font-size: 17px;
 	color: whitesmoke;
+}
+
+.terminal-btn {
+	border: none;
+	outline: none;
+	text-decoration: underline;
+	font-size: inherit;
+	background-color: inherit;
+	color: inherit;
 }
