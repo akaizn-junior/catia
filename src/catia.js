@@ -26,7 +26,11 @@ const actions = {
 	scrollRight: 'scroll right',
 	scrollDown: 'scroll down',
 	scrollUp: 'scroll up',
-	input: 'input'
+	input: 'input',
+	copy: 'copy',
+	paste: 'paste',
+	cut: 'cut',
+	select: 'select'
 };
 
 const digits = [
@@ -45,32 +49,6 @@ let lastKnownScrollPositionX = 0;
 let ticking = false;
 
 // Helpers
-
-function mashStringsByKeyword(strings, keyword, into) {
-	// reads an array of strings
-	// mashes consecutive strings with the same keyword
-	// into one string only
-	const li = strings.length - 1;
-	// gotta be any value that may not occur from user input
-	// or it will be split
-	const commaHash = btoa('comma');
-	const newKeyword = into || keyword;
-
-	if (keyword) {
-		return strings.reduce((p, c, i) => {
-			let res = p + commaHash + c;
-			if (c.includes(keyword)) {
-				let j = c.replace(/\s/g, '').split(keyword);
-				return (p + j[1] || '').trim();
-			}
-			return i === 0 ? p : i === li ? res : res + commaHash;
-		}, '')
-			.split(commaHash)
-			.map(c => (c.length && !c.includes(TOKEN_SPACE) ? newKeyword + TOKEN_SPACE + c : c));
-	}
-
-	return strings;
-}
 
 function isObject(obj) {
 	if (obj) {
@@ -379,6 +357,26 @@ function capture(opts = {}) {
 				ticking = true;
 			}
 		});
+
+		window.addEventListener('selectstart', () => {
+			logAction({ opts, captured: action('select') });
+		}, false);
+
+		window.addEventListener('select', () => {
+			logAction({ opts, captured: action('select') });
+		}, false);
+
+		window.addEventListener('copy', () => {
+			logAction({ opts, captured: action('copy') });
+		}, false);
+
+		window.addEventListener('paste', () => {
+			logAction({ opts, captured: action('paste') });
+		}, false);
+
+		window.addEventListener('cut', () => {
+			logAction({ opts, captured: action('cut') });
+		}, false);
 	};
 }
 
@@ -406,8 +404,7 @@ function catia(options = {}, callback = () => {}) {
 		/**
 		 * Starts capturing user events
 		 */
-		capture: capture(opts),
-		mash: mashStringsByKeyword
+		capture: capture(opts)
 	};
 }
 
