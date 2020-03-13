@@ -62,6 +62,14 @@
 					<div contenteditable="true" class="pretty-input">Write here also</div>
 				</div>
 				<div class="show-box">
+					<span class="label">Textarea</span>
+					<textarea class="pretty-input">Also, write here</textarea>
+				</div>
+				<div class="show-box">
+					<span class="label">Password</span>
+					<input type="password" placeholder="Your secret" class="pretty-input" />
+				</div>
+				<div class="show-box">
 					<span class="label">Select</span>
 					<select id="fruit-basket">
 						<option value="banana">Banana</option>
@@ -103,7 +111,8 @@
 				'.terminal-header',
 				'.terminal-line'
 			],
-			captureHover: false
+			captureHover: false,
+			ignoreContentFrom: ['type=password', '#input1']
 		}, (data) => {
 			// add terminal lines
 			const terminalLine = document.createElement('div');

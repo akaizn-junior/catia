@@ -30,7 +30,8 @@ const actions = {
 	copy: 'copy',
 	paste: 'paste',
 	cut: 'cut',
-	select: 'select'
+	select: 'select',
+	visit: 'visit'
 };
 
 const digits = [
@@ -64,7 +65,8 @@ function isObject(obj) {
 function isEditable(node) {
 	const contentEditable = node.contentEditable === 'true';
 	const name = getNodeName(node);
-	return name === 'input' || contentEditable;
+	const editables = ['input', 'textarea'];
+	return editables.includes(name) || contentEditable;
 }
 
 // Interface
@@ -269,7 +271,8 @@ function capture(opts = {}) {
 	return () => {
 		let waitCount = 0;
 		window.addEventListener('load', () => {
-		// wait every second, considering dead time
+			logAction({ opts, captured: action('visit')}, location.href);
+			// wait every second, considering dead time
 			opts.showWait && setTimeout(() => {
 				setInterval(() => {
 					logAction({ opts, captured: action('wait') }, waitCount);
@@ -388,7 +391,8 @@ function capture(opts = {}) {
 		captureSpacePress: false,
 		captureHover: false,
 		showWait: false,
-		waitTimeout: 5000
+		waitTimeout: 5000,
+		ignoreContentFrom
  * }} options
  * @param {(actions) => {}} callback Run on 'catiacapture' event's dispatch
  * @return catia methods
