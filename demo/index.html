@@ -67,7 +67,7 @@
 				</div>
 				<div class="show-box">
 					<span class="label">Password</span>
-					<input type="password" placeholder="Your secret" class="pretty-input" />
+					<input id="password" type="password" placeholder="Your secret" class="pretty-input" />
 				</div>
 				<div class="show-box">
 					<span class="label">Select</span>
@@ -103,17 +103,18 @@
 			captureSpacePress: true,
 			registerMultipleTimes: false,
 			captureScroll: false,
-			skipNodes: [
+			ignoreNodes: [
 				'html',
 				'body',
 				'main',
 				'.terminal',
 				'.terminal-header',
-				'.terminal-line'
+				'.terminal-line',
+				'#password'
 			],
 			captureHover: false,
 			showWait: false,
-			ignoreContentFrom: ['type=password', '#input1']
+			allowPasswordInput: false
 		}, (data) => {
 			// add terminal lines
 			const terminalLine = document.createElement('div');

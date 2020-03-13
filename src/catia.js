@@ -6,7 +6,7 @@
 
 // Globals
 
-const defaultSkipNodes = [
+const defaultIgnoreNodes = [
 	'html',
 	'body'
 ];
@@ -15,7 +15,8 @@ const events = {
 	focus: 'focus',
 	click: 'click',
 	doubleClick: 'double click',
-	hover: 'hoverover'
+	hover: 'hoverover',
+	rightClick: 'right click'
 };
 
 const actions = {
@@ -213,10 +214,10 @@ function buildSelectors(data) {
 }
 
 function getClosestSelector(target, options) {
-	const { skipNodes } = options;
+	const { ignoreNodes } = options;
 	const nodeSelectors = buildSelectors(getNodeData(target));
 	const selector = nodeSelectors.idSelector || nodeSelectors.classSelector || nodeSelectors.name;
-	return !skipNodes.includes(selector)
+	return !ignoreNodes.includes(selector)
 		? nodeSelectors.specificSelector
 		: null;
 }
@@ -266,7 +267,7 @@ function logAction(data, ...r) {
 function capture(opts = {}) {
 	// eslint-disable-next-line no-console
 	console.info('Capturing actions with catia');
-	const skipNodes = 'skipNodes' in opts && opts.skipNodes || defaultSkipNodes;
+	const ignoreNodes = 'ignoreNodes' in opts && opts.ignoreNodes || defaultIgnoreNodes;
 
 	return () => {
 		let waitCount = 0;
@@ -284,7 +285,7 @@ function capture(opts = {}) {
 		window.addEventListener('mouseover', ev => {
 			waitCount = 0;
 			// get the closest selector to the element hovered
-			const closestSelector = getClosestSelector(ev.target, { skipNodes });
+			const closestSelector = getClosestSelector(ev.target, { ignoreNodes });
 			// check if the element actually exists by the selector
 			const elem = closestSelector && document.querySelector(closestSelector);
 
@@ -311,37 +312,45 @@ function capture(opts = {}) {
 			}
 		}, false);
 
-		window.addEventListener('mouseup', ev => {
+		window.addEventListener('click', ev => {
 			waitCount = 0;
-			const target = ev.target;
-			getClosestSelector(target, { skipNodes })
-			&& logAction({ opts, captured: action('click') }, getClosestSelector(ev.target, { skipNodes }));
+			getClosestSelector(ev.target, { ignoreNodes })
+			&& logAction({ opts, captured: action('click') }, getClosestSelector(ev.target, { ignoreNodes }));
 		}, false);
 
 		window.addEventListener('dblclick', ev => {
 			waitCount = 0;
-			getClosestSelector(ev.target, { skipNodes })
-			&& logAction({ opts, captured: action('doubleClick') }, getClosestSelector(ev.target, { skipNodes }));
+			getClosestSelector(ev.target, { ignoreNodes })
+			&& logAction({ opts, captured: action('doubleClick') }, getClosestSelector(ev.target, { ignoreNodes }));
 		}, false);
 
 		window.addEventListener('keydown', ev => {
 			waitCount = 0;
 
 			if (ev.keyCode === 9) {
-				getClosestSelector(ev.target, { skipNodes })
-				&& logAction({ opts, captured: action('focus') }, getClosestSelector(ev.target, { skipNodes }));
+				getClosestSelector(ev.target, { ignoreNodes })
+				&& logAction({ opts, captured: action('focus') }, getClosestSelector(ev.target, { ignoreNodes }));
 			}
 
-			let typeEvOpts = {
-				captureSpacePress: opts.captureSpacePress,
-				typeDigits: isEditable(ev.target)
-			};
+			if (ev.target.type !== 'password' || opts.allowPasswordInput) {
+				let typeEvOpts = {
+					captureSpacePress: opts.captureSpacePress,
+					typeDigits: isEditable(ev.target)
+				};
 
-			const typed = typeEvent(ev, typeEvOpts);
-			typed.value.length && logAction({ opts, captured: typed.action }, typed.value);
+				const typed = typeEvent(ev, typeEvOpts);
+				typed.value.length && logAction({ opts, captured: typed.action }, typed.value);
+			}
+		}, false);
+
+		window.addEventListener('contextmenu', ev => {
+			waitCount = 0;
+			logAction({ opts, captured: action('rightClick') }, getClosestSelector(ev.target, { ignoreNodes }) || 'document');
 		}, false);
 
 		opts.captureScroll && window.addEventListener('scroll', () => {
+			waitCount = 0;
+
 			lastKnownScrollPositionY = window.scrollY;
 			lastKnownScrollPositionX = window.scrollX;
 			const maxY = window.scrollMaxY;
@@ -362,22 +371,27 @@ function capture(opts = {}) {
 		});
 
 		window.addEventListener('selectstart', () => {
+			waitCount = 0;
 			logAction({ opts, captured: action('select') });
 		}, false);
 
 		window.addEventListener('select', () => {
+			waitCount = 0;
 			logAction({ opts, captured: action('select') });
 		}, false);
 
 		window.addEventListener('copy', () => {
+			waitCount = 0;
 			logAction({ opts, captured: action('copy') });
 		}, false);
 
 		window.addEventListener('paste', () => {
+			waitCount = 0;
 			logAction({ opts, captured: action('paste') });
 		}, false);
 
 		window.addEventListener('cut', () => {
+			waitCount = 0;
 			logAction({ opts, captured: action('cut') });
 		}, false);
 	};
@@ -386,14 +400,14 @@ function capture(opts = {}) {
 /**
  * Capture user actions in the browser
  * @param {{
-* 		captureFocusOnClick?: boolean,
-		captureSpacePress?: boolean,
-		registerMultipleTimes?: boolean,
-		captureScroll?: boolean,
-		skipNodes?: Array,
-		captureHover?: boolean,
-		showWait?: boolean,
-		ignoreContentFrom?: Array
+ * 		captureFocusOnClick?: boolean,
+ *		captureSpacePress?: boolean,
+ *		registerMultipleTimes?: boolean,
+ *		captureScroll?: boolean,
+ *		ignoreNodes?: Array,
+ *		captureHover?: boolean,
+ *		showWait?: boolean,
+ *		allowPasswordInput?: boolean
  * }} options catia settings
  * @param {(actions) => {}} callback Run on every captured action
  * @return catia methods
@@ -407,7 +421,7 @@ function catia(options = {}, callback = () => {}) {
 
 	return {
 		/**
-		 * Starts capturing user events
+		 * Start capturing user events
 		 */
 		capture: capture(opts)
 	};
