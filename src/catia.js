@@ -386,15 +386,16 @@ function capture(opts = {}) {
 /**
  * Capture user actions in the browser
  * @param {{
- * 		skipNodes: ['html', 'node'],
- * 		captureFocusOnClick: false,
-		captureSpacePress: false,
-		captureHover: false,
-		showWait: false,
-		waitTimeout: 5000,
-		ignoreContentFrom
- * }} options
- * @param {(actions) => {}} callback Run on 'catiacapture' event's dispatch
+* 		captureFocusOnClick?: boolean,
+		captureSpacePress?: boolean,
+		registerMultipleTimes?: boolean,
+		captureScroll?: boolean,
+		skipNodes?: Array,
+		captureHover?: boolean,
+		showWait?: boolean,
+		ignoreContentFrom?: Array
+ * }} options catia settings
+ * @param {(actions) => {}} callback Run on every captured action
  * @return catia methods
  */
 function catia(options = {}, callback = () => {}) {
