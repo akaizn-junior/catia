@@ -332,7 +332,7 @@ function capture(opts = {}) {
 				&& logAction({ opts, captured: action('focus') }, getClosestSelector(ev.target, { ignoreNodes }));
 			}
 
-			if (ev.target.type !== 'password' || opts.allowPasswordInput) {
+			if (ev.target.type !== 'password' || opts.capturePasswordInput) {
 				let typeEvOpts = {
 					captureSpacePress: opts.captureSpacePress,
 					typeDigits: isEditable(ev.target)
@@ -407,7 +407,7 @@ function capture(opts = {}) {
  *		ignoreNodes?: Array,
  *		captureHover?: boolean,
  *		showWait?: boolean,
- *		allowPasswordInput?: boolean
+ *		capturePasswordInput?: boolean
  * }} options catia settings
  * @param {(actions) => {}} callback Run on every captured action
  * @return catia methods
