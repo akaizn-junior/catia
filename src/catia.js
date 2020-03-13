@@ -29,7 +29,12 @@ const actions = {
 	input: 'input'
 };
 
-const digits = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()_-=+\\|}{][":\';<,.>/?*-+^~´ªºÇç«»ã';
+const digits = [
+	'abcdefghijklmnopqrstuvwxyz',
+	'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+	'0123456789',
+	'`~!@#$%^&*()_-=+\\|}{][":\';<,.>/?*-+^~´ªºÇç«»ã'
+].join('');
 
 const capturedActions = [];
 let lastCapturedAction = '';
@@ -40,6 +45,32 @@ let lastKnownScrollPositionX = 0;
 let ticking = false;
 
 // Helpers
+
+function mashStringsByKeyword(strings, keyword, into) {
+	// reads an array of strings
+	// mashes consecutive strings with the same keyword
+	// into one string only
+	const li = strings.length - 1;
+	// gotta be any value that may not occur from user input
+	// or it will be split
+	const commaHash = btoa('comma');
+	const newKeyword = into || keyword;
+
+	if (keyword) {
+		return strings.reduce((p, c, i) => {
+			let res = p + commaHash + c;
+			if (c.includes(keyword)) {
+				let j = c.replace(/\s/g, '').split(keyword);
+				return (p + j[1] || '').trim();
+			}
+			return i === 0 ? p : i === li ? res : res + commaHash;
+		}, '')
+			.split(commaHash)
+			.map(c => (c.length && !c.includes(TOKEN_SPACE) ? newKeyword + TOKEN_SPACE + c : c));
+	}
+
+	return strings;
+}
 
 function isObject(obj) {
 	if (obj) {
@@ -227,8 +258,8 @@ function typeEvent(ev, options) {
 
 function logAction(data, ...r) {
 	const { opts, captured: o } = data;
-	const rest = r ? r.join('') : '';
-	let capturedAction = o.action + rest;
+	const rest = r?.join('') || '';
+	let capturedAction = (o?.action || '') + rest;
 
 	const event = new CustomEvent('catiacapture', {
 		detail: {
@@ -237,9 +268,9 @@ function logAction(data, ...r) {
 		}
 	});
 
-	console.log(o.token);
+	// may capture multiple of these
+	const ignoreForTheseTokens = ['type', 'press'];
 
-	const ignoreForTheseTokens = ['type'];
 	const canDispatch = lastCapturedAction !== capturedAction
 	|| ignoreForTheseTokens.includes(o.token)
 	|| opts.registerMultipleTimes;
@@ -359,8 +390,7 @@ function capture(opts = {}) {
 		captureSpacePress: false,
 		captureHover: false,
 		showWait: false,
-		waitTimeout: 5000,
-		mashTyped
+		waitTimeout: 5000
  * }} options
  * @param {(actions) => {}} callback Run on 'catiacapture' event's dispatch
  * @return catia methods
@@ -376,7 +406,8 @@ function catia(options = {}, callback = () => {}) {
 		/**
 		 * Starts capturing user events
 		 */
-		capture: capture(opts)
+		capture: capture(opts),
+		mash: mashStringsByKeyword
 	};
 }
 
