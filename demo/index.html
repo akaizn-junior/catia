@@ -94,7 +94,7 @@
 		const terminal = document.querySelector('.terminal');
 		const terminalBody = document.querySelector('.terminal-body');
 		const clearBtn = document.getElementById('clear-terminal');
-		clearBtn.onclick = function() {
+		clearBtn.onmouseup = function() {
 			terminalBody.innerHTML = '';
 		};
 
@@ -114,7 +114,8 @@
 			],
 			captureHover: false,
 			showWait: false,
-			capturePasswordInput: false
+			capturePasswordInput: false,
+			selectorSpecificity: 'high'
 		}, (data) => {
 			// add terminal lines
 			const terminalLine = document.createElement('div');

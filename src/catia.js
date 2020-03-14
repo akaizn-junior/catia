@@ -213,7 +213,7 @@ function buildSelectors(data) {
 	);
 }
 
-function getClosestSelector(target, options) {
+function getSelector(target, options) {
 	const { ignoreNodes } = options;
 	const nodeSelectors = buildSelectors(getNodeData(target));
 	const selector = nodeSelectors.idSelector || nodeSelectors.classSelector || nodeSelectors.name;
@@ -285,13 +285,13 @@ function capture(opts = {}) {
 		window.addEventListener('mouseover', ev => {
 			waitCount = 0;
 			// get the closest selector to the element hovered
-			const closestSelector = getClosestSelector(ev.target, { ignoreNodes });
+			const selector = getSelector(ev.target, { ignoreNodes });
 			// check if the element actually exists by the selector
-			const elem = closestSelector && document.querySelector(closestSelector);
+			const elem = selector && document.querySelector(selector);
 
-			closestSelector
+			selector
 			&& opts.captureHover
-			&& logAction({ opts, captured: action('hover') }, closestSelector);
+			&& logAction({ opts, captured: action('hover') }, selector);
 
 			// add focus event on the element just hovered, for when is focused
 			if (elem) {
@@ -300,7 +300,7 @@ function capture(opts = {}) {
 					const isFocusable = Number(target.tabIndex) >= 0;
 
 					if (isFocusable && opts.captureFocusOnClick) {
-						logAction({ opts, captured: action('focus') }, closestSelector);
+						logAction({ opts, captured: action('focus') }, selector);
 					}
 				}, false);
 
@@ -314,22 +314,22 @@ function capture(opts = {}) {
 
 		window.addEventListener('click', ev => {
 			waitCount = 0;
-			getClosestSelector(ev.target, { ignoreNodes })
-			&& logAction({ opts, captured: action('click') }, getClosestSelector(ev.target, { ignoreNodes }));
+			getSelector(ev.target, { ignoreNodes })
+			&& logAction({ opts, captured: action('click') }, getSelector(ev.target, { ignoreNodes }));
 		}, false);
 
 		window.addEventListener('dblclick', ev => {
 			waitCount = 0;
-			getClosestSelector(ev.target, { ignoreNodes })
-			&& logAction({ opts, captured: action('doubleClick') }, getClosestSelector(ev.target, { ignoreNodes }));
+			getSelector(ev.target, { ignoreNodes })
+			&& logAction({ opts, captured: action('doubleClick') }, getSelector(ev.target, { ignoreNodes }));
 		}, false);
 
 		window.addEventListener('keydown', ev => {
 			waitCount = 0;
 
 			if (ev.keyCode === 9) {
-				getClosestSelector(ev.target, { ignoreNodes })
-				&& logAction({ opts, captured: action('focus') }, getClosestSelector(ev.target, { ignoreNodes }));
+				getSelector(ev.target, { ignoreNodes })
+				&& logAction({ opts, captured: action('focus') }, getSelector(ev.target, { ignoreNodes }));
 			}
 
 			if (ev.target.type !== 'password' || opts.capturePasswordInput) {
@@ -345,7 +345,7 @@ function capture(opts = {}) {
 
 		window.addEventListener('contextmenu', ev => {
 			waitCount = 0;
-			logAction({ opts, captured: action('rightClick') }, getClosestSelector(ev.target, { ignoreNodes }) || 'document');
+			logAction({ opts, captured: action('rightClick') }, getSelector(ev.target, { ignoreNodes }) || 'document');
 		}, false);
 
 		opts.captureScroll && window.addEventListener('scroll', () => {
@@ -404,10 +404,11 @@ function capture(opts = {}) {
  *		captureSpacePress?: boolean,
  *		registerMultipleTimes?: boolean,
  *		captureScroll?: boolean,
- *		ignoreNodes?: Array,
+ *		ignoreNodes?: string[],
  *		captureHover?: boolean,
  *		showWait?: boolean,
- *		capturePasswordInput?: boolean
+ *		capturePasswordInput?: boolean,
+ *		selectorSpecificity?: 'high' | 'medium' | 'low'
  * }} options catia settings
  * @param {(actions) => {}} callback Run on every captured action
  * @return catia methods
