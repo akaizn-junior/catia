@@ -156,6 +156,7 @@ function getNodeData(node) {
 	const prevNodeName = previousElementSibling && getNodeName(previousElementSibling) || '';
 	const nextNodeName = nextElementSibling && getNodeName(nextElementSibling) || '';
 	const _attributes = attributes ? getNodeAttributes(attributes) : [];
+	const pAttributes = parentNode.attributes ? getNodeAttributes(parentNode.attributes) : [];
 
 	return {
 		name,
@@ -172,43 +173,48 @@ function getNodeData(node) {
 		offsetWidth,
 		offsetLeft,
 		offsetTop,
-		attributes: { ..._attributes }
+		attributes: { ..._attributes },
+		parentAttributes: { ...pAttributes },
 	};
 }
 
 function buildSelectors(data) {
-	const attributes = data.attributes;
-	const attrs = Object.entries(attributes);
-	let aDefinedAttr = null;
+	const attrs = Object.entries(data.attributes);
+	const pAttrs = Object.entries(data.parentAttributes);
+	let parentSelector = data.parentNodeName;
+	const attr = attrs[0];
+	const pAttr = pAttrs[0];
 
-	// get the first non-empty attribute
-	for (let i = 0; i < attrs.length; i++) {
-		const key = attrs[i][0];
-		const value = attrs[i][1];
-		if (value.length) {
-			aDefinedAttr = {
-				[key]: value,
-				specificSelector: `${data.parentNodeName} > ${data.name}[${key}="${value}"]`
-			};
-			break;
-		}
+	if (data.parentAttributes.id && !data.parentAttributes.class) {
+		parentSelector = `${parentSelector}#${data.parentAttributes.id}`;
+	}
+
+	if (data.parentAttributes.class && !data.parentAttributes.id) {
+		parentSelector = `${parentSelector}.${data.parentAttributes.class}`;
+	}
+
+	if (pAttr && !data.parentAttributes.class && !data.parentAttributes.id) {
+		parentSelector = `${parentSelector}[${pAttr[0][0]}="${pAttr[0][1]}"]`;
 	}
 
 	return (
-		attributes.id && {
-			id: attributes.id,
-			idSelector: `#${attributes.id}`,
-			specificSelector: `${data.parentNodeName} > ${data.name}#${attributes.id}`
+		data.attributes.id && {
+			id: data.attributes.id,
+			idSelector: `#${data.attributes.id}`,
+			specificSelector: `${parentSelector} > ${data.name}#${data.attributes.id}`
 		}
-		|| attributes.class && {
-			class: `${data.name}.${attributes.class}`,
-			classSelector: `.${attributes.class}`,
-			specificSelector: `${data.parentNodeName} > ${data.name}.${attributes.class}`
+		|| data.attributes.class && {
+			class: `${data.name}.${data.attributes.class}`,
+			classSelector: `.${data.attributes.class}`,
+			specificSelector: `${parentSelector} > ${data.name}.${data.attributes.class}`
 		}
-		|| aDefinedAttr && aDefinedAttr
+		|| attr && {
+			[attr[0]]: attr[1],
+			specificSelector: `${parentSelector} > ${data.name}[${attr[0]}="${attr[1]}"]`
+		}
 		|| {
 			name: data.name,
-			specificSelector: `${data.parentNodeName} > ${data.name}`
+			specificSelector: `${parentSelector} > ${data.name}`
 		}
 	);
 }
@@ -282,7 +288,7 @@ function capture(opts = {}) {
 			}, opts.waitTimeout || 5000);
 		}, false);
 
-		window.addEventListener('mouseover', ev => {
+		opts.captureHover && window.addEventListener('mouseover', ev => {
 			waitCount = 0;
 			// get the closest selector to the element hovered
 			const selector = getSelector(ev.target, { ignoreNodes });
@@ -290,7 +296,6 @@ function capture(opts = {}) {
 			const elem = selector && document.querySelector(selector);
 
 			selector
-			&& opts.captureHover
 			&& logAction({ opts, captured: action('hover') }, selector);
 
 			// add focus event on the element just hovered, for when is focused
