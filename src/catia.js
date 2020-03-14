@@ -272,7 +272,7 @@ function capture(opts = {}) {
 	return () => {
 		let waitCount = 0;
 		window.addEventListener('load', () => {
-			logAction({ opts, captured: action('visit')}, location.href);
+			logAction({ opts, captured: action('visit')}, opts.visitPath || location.href);
 			// wait every second, considering dead time
 			opts.showWait && setTimeout(() => {
 				setInterval(() => {
@@ -400,6 +400,7 @@ function capture(opts = {}) {
 /**
  * Capture user actions in the browser
  * @param {{
+ *		visitPath?: string,
  * 		captureFocusOnClick?: boolean,
  *		captureSpacePress?: boolean,
  *		registerMultipleTimes?: boolean,

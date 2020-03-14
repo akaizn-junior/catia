@@ -94,11 +94,13 @@
 		const terminal = document.querySelector('.terminal');
 		const terminalBody = document.querySelector('.terminal-body');
 		const clearBtn = document.getElementById('clear-terminal');
-		clearBtn.onmouseup = function() {
+
+		clearBtn.onmousedown = function() {
 			terminalBody.innerHTML = '';
 		};
 
 		var c = catia({
+			// visitPath: 'https://staging.app.com'+location.pathname,
 			captureFocusOnClick: false,
 			captureSpacePress: true,
 			registerMultipleTimes: false,
