@@ -288,7 +288,7 @@ function capture(opts = {}) {
 			}, opts.waitTimeout || 5000);
 		}, false);
 
-		opts.captureHover && window.addEventListener('mouseover', ev => {
+		window.addEventListener('mouseover', ev => {
 			waitCount = 0;
 			// get the closest selector to the element hovered
 			const selector = getSelector(ev.target, { ignoreNodes });
@@ -296,6 +296,7 @@ function capture(opts = {}) {
 			const elem = selector && document.querySelector(selector);
 
 			selector
+			&& opts.captureHover
 			&& logAction({ opts, captured: action('hover') }, selector);
 
 			// add focus event on the element just hovered, for when is focused
