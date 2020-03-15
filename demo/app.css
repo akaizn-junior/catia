@@ -4,7 +4,7 @@
 }
 
 body {
-	background-color: antiquewhite;
+	background-color: #ffe1c1;
 	font-family: sans-serif;
 }
 
@@ -83,7 +83,7 @@ header {
 .show-box .label {
 	position: absolute;
 	font-size: 12px;
-	top: -12px;
+	top: -10px;
 	left: -1px;
 	color: aliceblue;
 	background-color: black;
@@ -180,4 +180,10 @@ select {
 	font-size: inherit;
 	background-color: inherit;
 	color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+	body {
+		background-color: #2d2d2d;
+	}
 }
