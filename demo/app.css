@@ -33,25 +33,37 @@ ul li {
 }
 
 a {
-	color: #2b2b2b;
+	color: inherit;
 	text-decoration: none;
 }
 
 a:hover,
 a:focus {
-	color: #000000;
+	color: inherit;
 	border-bottom: 2px solid palevioletred;
 }
 
+header {
+	display: grid;
+	grid-template-columns: 100px auto;
+}
+
 .brand {
-	margin: 10px 20px;
-	color: palevioletred;
-	font-size: 3em;
+	position: relative;
+	top: 7px;
+	left: 10px;
 }
 
 .menu {
-	position: relative;
-	top: -8px;
+    position: relative;
+    top: 35px;
+    left: 10px;
+    font-size: .9em;
+    background-color: black;
+    color: #ebebeb;
+    height: 25px;
+    border-radius: 5px;
+    padding-top: 5px;
 }
 
 /* Show box */
