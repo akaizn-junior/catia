@@ -2,7 +2,7 @@
 
 ![Catia logo](./catia.svg)
 
-Capture user actions in the browser
+Capture user actions in the browser.
 
 ## Shout outs
 
