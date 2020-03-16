@@ -54,6 +54,16 @@ header {
 	left: 10px;
 }
 
+#catia-svg {
+	opacity: .9;
+}
+
+#catia-svg:hover,
+#catia-svg:focus {
+	opacity: 1;
+	transition: ease .2s;
+}
+
 .menu {
     position: relative;
     top: 35px;

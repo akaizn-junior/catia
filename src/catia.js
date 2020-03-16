@@ -139,14 +139,6 @@ function getNodeData(node) {
 		parentNode,
 		nextElementSibling,
 		previousElementSibling,
-		clientHeight,
-		clientWidth,
-		clientLeft,
-		clientTop,
-		offsetHeight,
-		offsetWidth,
-		offsetLeft,
-		offsetTop,
 		dataset,
 	} = node;
 
@@ -165,63 +157,67 @@ function getNodeData(node) {
 		prevNodeName,
 		classList: [...classList] || [],
 		dataset: dataset || [],
-		clientHeight,
-		clientWidth,
-		clientLeft,
-		clientTop,
-		offsetHeight,
-		offsetWidth,
-		offsetLeft,
-		offsetTop,
 		attributes: { ..._attributes },
 		parentAttributes: { ...pAttributes },
 	};
 }
 
-function buildSelectors(data) {
-	const attrs = Object.entries(data.attributes);
-	const pAttrs = Object.entries(data.parentAttributes);
-	let parentSelector = data.parentNodeName;
-	const attr = attrs[0];
-	const pAttr = pAttrs[0];
+function buildSelectors(opts, data) {
+	const { selectorSpecificity } = opts;
+	const { attributes, parentAttributes, name, parentNodeName } = data;
 
-	if (data.parentAttributes.id && !data.parentAttributes.class) {
-		parentSelector = `${parentSelector}#${data.parentAttributes.id}`;
+	let parentSelector = parentNodeName;
+	const attr = Object.entries(attributes)[0];
+	const pAttr = Object.entries(parentAttributes)[0];
+	const s1 = selectorSpecificity === 1;
+	const s2 = selectorSpecificity === 2;
+
+	if (parentAttributes.id && !parentAttributes.class) {
+		parentSelector
+			= s1 && `#${parentAttributes.id}`
+			|| `${parentSelector}#${parentAttributes.id}`;
 	}
 
-	if (data.parentAttributes.class && !data.parentAttributes.id) {
-		parentSelector = `${parentSelector}.${data.parentAttributes.class}`;
+	if (parentAttributes.class && !parentAttributes.id) {
+		parentSelector
+		= s1 && `.${parentAttributes.class}`
+		|| `${parentSelector}.${parentAttributes.class}`;
 	}
 
-	if (pAttr && !data.parentAttributes.class && !data.parentAttributes.id) {
-		parentSelector = `${parentSelector}[${pAttr[0][0]}="${pAttr[0][1]}"]`;
+	if (pAttr && !parentAttributes.class && !parentAttributes.id) {
+		parentSelector
+		= s1 && `[${pAttr[0][0]}="${pAttr[0][1]}"]`
+		|| `${parentSelector}[${pAttr[0][0]}="${pAttr[0][1]}"]`;
 	}
 
 	return (
-		data.attributes.id && {
-			id: data.attributes.id,
-			idSelector: `#${data.attributes.id}`,
-			specificSelector: `${parentSelector} > ${data.name}#${data.attributes.id}`
+		attributes.id && {
+			id: attributes.id,
+			idSelector: `#${attributes.id}`,
+			specificSelector: s1 && `#${attributes.id}` || s2 && `${name}#${attributes.id}`
+			|| `${parentSelector} > ${name}#${attributes.id}`
 		}
-		|| data.attributes.class && {
-			class: `${data.name}.${data.attributes.class}`,
-			classSelector: `.${data.attributes.class}`,
-			specificSelector: `${parentSelector} > ${data.name}.${data.attributes.class}`
+		|| attributes.class && {
+			class: `${name}.${attributes.class}`,
+			classSelector: `.${attributes.class}`,
+			specificSelector: s1 && `.${attributes.class}` || s2 && `${name}.${attributes.class}`
+			|| `${parentSelector} > ${name}.${attributes.class}`
 		}
 		|| attr && {
 			[attr[0]]: attr[1],
-			specificSelector: `${parentSelector} > ${data.name}[${attr[0]}="${attr[1]}"]`
+			specificSelector: s1 && `[${attr[0]}="${attr[1]}"]` || s2 && `${name}[${attr[0]}="${attr[1]}"]`
+			|| `${parentSelector} > ${name}[${attr[0]}="${attr[1]}"]`
 		}
 		|| {
-			name: data.name,
-			specificSelector: `${parentSelector} > ${data.name}`
+			name,
+			specificSelector: s1 && name || `${parentSelector} > ${name}`
 		}
 	);
 }
 
 function getSelector(target, options) {
-	const { ignoreNodes } = options;
-	const nodeSelectors = buildSelectors(getNodeData(target));
+	const { ignoreNodes, selectorSpecificity } = options;
+	const nodeSelectors = buildSelectors({ selectorSpecificity }, getNodeData(target));
 	const selector = nodeSelectors.idSelector || nodeSelectors.classSelector || nodeSelectors.name;
 	return !ignoreNodes.includes(selector)
 		? nodeSelectors.specificSelector
@@ -270,10 +266,10 @@ function logAction(data, ...r) {
 	lastCapturedAction = capturedAction;
 }
 
-function capture(opts = {}) {
+function capture(opts) {
 	// eslint-disable-next-line no-console
 	console.info('Capturing actions with catia');
-	const ignoreNodes = 'ignoreNodes' in opts && opts.ignoreNodes || defaultIgnoreNodes;
+	const { selectorSpecificity, ignoreNodes } = opts;
 
 	return () => {
 		let waitCount = 0;
@@ -291,7 +287,7 @@ function capture(opts = {}) {
 		window.addEventListener('mouseover', ev => {
 			waitCount = 0;
 			// get the closest selector to the element hovered
-			const selector = getSelector(ev.target, { ignoreNodes });
+			const selector = getSelector(ev.target, { ignoreNodes, selectorSpecificity });
 			// check if the element actually exists by the selector
 			const elem = selector && document.querySelector(selector);
 
@@ -320,22 +316,22 @@ function capture(opts = {}) {
 
 		window.addEventListener('click', ev => {
 			waitCount = 0;
-			getSelector(ev.target, { ignoreNodes })
-			&& logAction({ opts, captured: action('click') }, getSelector(ev.target, { ignoreNodes }));
+			getSelector(ev.target, { ignoreNodes, selectorSpecificity })
+			&& logAction({ opts, captured: action('click') }, getSelector(ev.target, { ignoreNodes, selectorSpecificity }));
 		}, false);
 
 		window.addEventListener('dblclick', ev => {
 			waitCount = 0;
-			getSelector(ev.target, { ignoreNodes })
-			&& logAction({ opts, captured: action('doubleClick') }, getSelector(ev.target, { ignoreNodes }));
+			getSelector(ev.target, { ignoreNodes, selectorSpecificity })
+			&& logAction({ opts, captured: action('doubleClick') }, getSelector(ev.target, { ignoreNodes, selectorSpecificity }));
 		}, false);
 
 		window.addEventListener('keydown', ev => {
 			waitCount = 0;
 
 			if (ev.keyCode === 9) {
-				getSelector(ev.target, { ignoreNodes })
-				&& logAction({ opts, captured: action('focus') }, getSelector(ev.target, { ignoreNodes }));
+				getSelector(ev.target, { ignoreNodes, selectorSpecificity })
+				&& logAction({ opts, captured: action('focus') }, getSelector(ev.target, { ignoreNodes, selectorSpecificity }));
 			}
 
 			if (ev.target.type !== 'password' || opts.capturePasswordInput) {
@@ -351,7 +347,7 @@ function capture(opts = {}) {
 
 		window.addEventListener('contextmenu', ev => {
 			waitCount = 0;
-			logAction({ opts, captured: action('rightClick') }, getSelector(ev.target, { ignoreNodes }) || 'document');
+			logAction({ opts, captured: action('rightClick') }, getSelector(ev.target, { ignoreNodes, selectorSpecificity }) || 'document');
 		}, false);
 
 		opts.captureScroll && window.addEventListener('scroll', () => {
@@ -414,14 +410,16 @@ function capture(opts = {}) {
  *		ignoreNodes?: string[],
  *		captureHover?: boolean,
  *		showWait?: boolean,
- *		capturePasswordInput?: boolean,
- *		selectorSpecificity?: 'high' | 'medium' | 'low'
+ *		capturePasswordInput?: boolean
+ *		selectorSpecificity?: 1 | 2 | 3
  * }} options catia settings
  * @param {(actions) => {}} callback Run on every captured action
  * @return catia methods
  */
 function catia(options = {}, callback = () => {}) {
 	const opts = isObject(options) && options || {};
+	// set actual or default
+	const ignoreNodes = 'ignoreNodes' in opts && opts.ignoreNodes || defaultIgnoreNodes;
 
 	window.addEventListener('catiacapture', e => {
 		callback({...e.detail});
@@ -431,7 +429,7 @@ function catia(options = {}, callback = () => {}) {
 		/**
 		 * Start capturing user events
 		 */
-		capture: capture(opts)
+		capture: capture({ ignoreNodes, ...opts })
 	};
 }
 

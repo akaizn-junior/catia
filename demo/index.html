@@ -5,6 +5,8 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Catia</title>
+	<meta name="author" content="Simao Nziaka" />
+	<meta name="description" content="Capture user actions in the browser" />
 	<link rel="stylesheet" href="./app.css">
 </head>
 
@@ -22,7 +24,7 @@
 		<section>
 			<header>
 				<div title="Catia" aria-label="Catia">
-					<svg class="brand" title="Catia" aria-label="Catia" width="80px" height="80px"
+					<svg id="catia-svg" aria-label="Catia" width="80px" height="80px"
 						viewBox="0 0 33.498 33.498" fill="palevioletred"
 						stroke="palevioletred" stroke-width="0">
 						<path
@@ -82,6 +84,7 @@
 						<option value="banana">Banana</option>
 						<option selected>Apple</option>
 						<option value="oranges">Oranges</option>
+						<option>Pears</option>
 					</select>
 				</div>
 				<div class="show-box">
@@ -123,8 +126,7 @@
 			],
 			captureHover: false,
 			showWait: false,
-			capturePasswordInput: false,
-			selectorSpecificity: 'high'
+			capturePasswordInput: false
 		}, (data) => {
 			// add terminal lines
 			const terminalLine = document.createElement('div');

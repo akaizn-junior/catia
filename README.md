@@ -1,6 +1,6 @@
 # Catia
 
-![logo](./catia.svg)
+![Catia logo](./catia.svg)
 
 Capture user actions in the browser
 
