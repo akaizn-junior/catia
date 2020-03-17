@@ -32,7 +32,9 @@ const actions = {
 	paste: 'paste',
 	cut: 'cut',
 	select: 'select',
-	visit: 'visit'
+	visit: 'visit',
+	submit: 'submit',
+	reset: 'reset'
 };
 
 const digits = [
@@ -395,6 +397,16 @@ function capture(opts) {
 		window.addEventListener('cut', () => {
 			waitCount = 0;
 			logAction({ opts, captured: action('cut') });
+		}, false);
+
+		window.addEventListener('submit', () => {
+			waitCount = 0;
+			logAction({ opts, captured: action('submit') });
+		}, false);
+
+		window.addEventListener('reset', () => {
+			waitCount = 0;
+			logAction({ opts, captured: action('reset') });
 		}, false);
 	};
 }
